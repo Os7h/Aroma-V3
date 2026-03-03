@@ -188,12 +188,15 @@ function renderGeschmack(ingredient) {
 // ============================================
 // MOLEKÜLE
 // ============================================
+let currentMolSlot = null; // Track currently selected molecule group slot
+
 function renderMolekuele() {
   const grid = document.getElementById('molekuele-circles');
   const detail = document.getElementById('molekuele-detail');
   grid.innerHTML = '';
   detail.innerHTML = '';
   detail.style.display = 'none';
+  currentMolSlot = null;
 
   // Determine which groups are active
   const activeSlots = new Set();
@@ -208,8 +211,10 @@ function renderMolekuele() {
     const isActive = activeSlots.has(group.slot);
     const circle = document.createElement('div');
     circle.className = 'mol-circle';
-    circle.style.backgroundColor = isActive ? color1(group.color_hex) : color3(group.color_hex);
+    // Active = Color 2, Inactive = Color 3
+    circle.style.backgroundColor = isActive ? color2(group.color_hex) : color3(group.color_hex);
     circle.dataset.slot = group.slot;
+    circle.dataset.active = isActive ? '1' : '0';
 
     const num = document.createElement('span');
     num.className = 'mol-number';
@@ -217,18 +222,38 @@ function renderMolekuele() {
     circle.appendChild(num);
 
     circle.addEventListener('click', () => {
-      // Highlight selected circle
-      grid.querySelectorAll('.mol-circle').forEach(c => {
-        c.style.boxShadow = 'none';
-        c.style.transform = '';
-      });
       if (isActive) {
-        circle.style.boxShadow = `0 0 0 3px ${colorWithAlpha(group.color_hex, 0.4)}`;
-        showMoleculeDetail(group);
+        // Toggle: if already selected, deselect
+        if (currentMolSlot === group.slot) {
+          currentMolSlot = null;
+          clearMolSelection(grid);
+          detail.innerHTML = '';
+          detail.style.display = 'none';
+        } else {
+          // Select this group
+          currentMolSlot = group.slot;
+          clearMolSelection(grid);
+          circle.classList.add('selected');
+          circle.style.boxShadow = `inset 0 0 0 4px ${color1(group.color_hex)}`;
+          showMoleculeDetail(group);
+        }
+      } else {
+        // Inactive circle clicked — close any open detail
+        currentMolSlot = null;
+        clearMolSelection(grid);
+        detail.innerHTML = '';
+        detail.style.display = 'none';
       }
     });
 
     grid.appendChild(circle);
+  });
+}
+
+function clearMolSelection(grid) {
+  grid.querySelectorAll('.mol-circle').forEach(c => {
+    c.classList.remove('selected');
+    c.style.boxShadow = 'none';
   });
 }
 
@@ -249,11 +274,11 @@ function showMoleculeDetail(group) {
   desc.textContent = group.descriptor_de;
   detail.appendChild(desc);
 
-  // Molecules heading
-  const heading = document.createElement('div');
-  heading.className = 'mol-detail-heading';
-  heading.textContent = 'MOLEKÜLE';
-  detail.appendChild(heading);
+  // Thick Color 1 underline (2/3 width)
+  const underline = document.createElement('div');
+  underline.className = 'mol-detail-underline';
+  underline.style.backgroundColor = color1(group.color_hex);
+  detail.appendChild(underline);
 
   // Filter molecules for this group
   const groupMols = currentMolecules.filter(m =>
@@ -271,18 +296,13 @@ function showMoleculeDetail(group) {
     name.textContent = mol.name_de.toUpperCase();
     molDiv.appendChild(name);
 
-    // Props row
+    // Props row — values only, no sub-headlines
     const props = document.createElement('div');
     props.className = 'mol-detail-props';
 
-    // AROMATIK
     if (mol.descriptors_de) {
       const aromProp = document.createElement('div');
       aromProp.className = 'mol-detail-prop';
-      const aromLabel = document.createElement('div');
-      aromLabel.className = 'mol-detail-prop-label';
-      aromLabel.textContent = 'AROMATIK';
-      aromProp.appendChild(aromLabel);
       const aromVal = document.createElement('div');
       aromVal.className = 'mol-detail-prop-value';
       aromVal.textContent = mol.descriptors_de;
@@ -290,14 +310,9 @@ function showMoleculeDetail(group) {
       props.appendChild(aromProp);
     }
 
-    // LÖSLICHKEIT
     if (mol.solubility_de) {
       const solProp = document.createElement('div');
       solProp.className = 'mol-detail-prop';
-      const solLabel = document.createElement('div');
-      solLabel.className = 'mol-detail-prop-label';
-      solLabel.textContent = 'LÖSLICHKEIT';
-      solProp.appendChild(solLabel);
       const solVal = document.createElement('div');
       solVal.className = 'mol-detail-prop-value';
       solVal.textContent = mol.solubility_de;
@@ -324,35 +339,7 @@ function renderAromaentfaltung() {
   const wrapper = document.createElement('div');
   wrapper.className = 'aroma-chart-inner';
 
-  // --- Scale row ---
-  const scaleRow = document.createElement('div');
-  scaleRow.className = 'aroma-scale';
-  scaleRow.style.display = 'flex';
-  scaleRow.style.position = 'relative';
-  scaleRow.style.padding = '0';
-  scaleRow.style.marginBottom = '8px';
-
-  const scaleLabels = [
-    { value: 0, pos: 0 },
-    { value: 50, pos: 50 / 170 * 100 },
-    { value: 100, pos: 100 / 170 * 100 },
-    { value: 150, pos: 150 / 170 * 100 },
-    { value: '°C', pos: 100 }
-  ];
-
-  scaleLabels.forEach(s => {
-    const lab = document.createElement('span');
-    lab.className = 'aroma-scale-label';
-    lab.textContent = s.value;
-    lab.style.position = 'absolute';
-    lab.style.left = s.pos + '%';
-    lab.style.transform = 'translateX(-50%)';
-    scaleRow.appendChild(lab);
-  });
-  scaleRow.style.height = '16px';
-  wrapper.appendChild(scaleRow);
-
-  // --- Bar rows ---
+  // --- Bar rows (rendered FIRST, scale goes below) ---
   const barsContainer = document.createElement('div');
   barsContainer.className = 'aroma-bars';
 
@@ -385,6 +372,10 @@ function renderAromaentfaltung() {
       sq.dataset.color2 = color2(hex);
       sq.dataset.color3 = color3(hex);
       sq.dataset.color1 = color1(hex);
+      // Subtle increment lines on inactive squares only
+      if (!isActiveSquare && i < 16) {
+        sq.style.borderRight = '1px solid rgba(255,255,255,0.3)';
+      }
       row.appendChild(sq);
       squares.push(sq);
     }
@@ -395,6 +386,34 @@ function renderAromaentfaltung() {
 
   wrapper.appendChild(barsContainer);
 
+  // --- Scale row (BELOW the bars) ---
+  const scaleRow = document.createElement('div');
+  scaleRow.className = 'aroma-scale';
+  scaleRow.style.display = 'flex';
+  scaleRow.style.position = 'relative';
+  scaleRow.style.padding = '0';
+  scaleRow.style.marginTop = '6px';
+  scaleRow.style.marginBottom = '0';
+
+  const scaleLabels = [
+    { value: 0, pos: 0 },
+    { value: 50, pos: 50 / 170 * 100 },
+    { value: 150, pos: 150 / 170 * 100 },
+    { value: '°C', pos: 100 }
+  ];
+
+  scaleLabels.forEach(s => {
+    const lab = document.createElement('span');
+    lab.className = 'aroma-scale-label';
+    lab.textContent = s.value;
+    lab.style.position = 'absolute';
+    lab.style.left = s.pos + '%';
+    lab.style.transform = 'translateX(-50%)';
+    scaleRow.appendChild(lab);
+  });
+  scaleRow.style.height = '16px';
+  wrapper.appendChild(scaleRow);
+
   // --- Slider ---
   const slider = document.createElement('div');
   slider.className = 'aroma-slider';
@@ -403,8 +422,11 @@ function renderAromaentfaltung() {
   slider.appendChild(sliderHandle);
 
   // Position slider initially at far left
+  // Height = number of rows * (12px bar + 3px margin) - last margin
+  const rowCount = sortedTemps.length;
+  const sliderHeight = rowCount * 15 - 3; // 12px bar + 3px gap, minus last gap
   slider.style.left = '0%';
-  slider.style.height = barsContainer.children.length * 20 + 'px';
+  slider.style.height = sliderHeight + 'px';
 
   wrapper.appendChild(slider);
   chartContainer.appendChild(wrapper);
@@ -424,15 +446,25 @@ function renderAromaentfaltung() {
     slider.style.left = (pct * 100) + '%';
 
     // Update bar colors based on slider position
+    // Active squares BEFORE slider → solid Color 1
+    // Active squares AT or AFTER slider → Color 2
+    // Inactive squares → Color 3
     barElements.forEach(({ squares, hex, startSquare, endSquare }) => {
       squares.forEach((sq, i) => {
         const isActive = sq.dataset.active === '1';
-        if (i === squareIndex && isActive) {
+        if (isActive && i <= squareIndex) {
+          // Fill active path up to slider with solid Color 1
           sq.style.backgroundColor = color1(hex);
+          sq.style.borderRight = 'none'; // no increment lines in active filled section
         } else if (isActive) {
           sq.style.backgroundColor = color2(hex);
+          sq.style.borderRight = 'none';
         } else {
           sq.style.backgroundColor = color3(hex);
+          // Subtle increment lines on inactive only
+          if (i < 16) {
+            sq.style.borderRight = '1px solid rgba(255,255,255,0.3)';
+          }
         }
       });
     });
@@ -580,34 +612,19 @@ function createHarmonieRow(name, activeSlots, isMain, onNavigate) {
         const isSelected = circle.dataset.selected === '1';
 
         if (isSelected) {
-          // Deselect
+          // Deselect — remove outline, restore base color
           circle.dataset.selected = '0';
           harmonieSelectedSlots.delete(group.slot);
-
-          if (isActive) {
-            circle.style.backgroundColor = color2(group.color_hex);
-            circle.style.border = 'none';
-            circle.style.boxSizing = 'border-box';
-          } else {
-            circle.style.backgroundColor = color3(group.color_hex);
-            circle.style.border = 'none';
-            circle.style.boxSizing = 'border-box';
-          }
+          circle.style.boxShadow = 'none';
+          // Keep base color (Color 2 for active, Color 3 for inactive)
+          circle.style.backgroundColor = isActive ? color2(group.color_hex) : color3(group.color_hex);
         } else {
-          // Select
+          // Select — add Color 1 outline, inside retains base color
           circle.dataset.selected = '1';
           harmonieSelectedSlots.add(group.slot);
-
-          if (isActive) {
-            // Active circle goes to Color 1 (filled)
-            circle.style.backgroundColor = color1(group.color_hex);
-            circle.style.border = 'none';
-          } else {
-            // Inactive circle gets Color 1 outline only
-            circle.style.backgroundColor = 'transparent';
-            circle.style.border = `2.5px solid ${color1(group.color_hex)}`;
-            circle.style.boxSizing = 'border-box';
-          }
+          circle.style.boxShadow = `0 0 0 2.5px ${color1(group.color_hex)}`;
+          // Keep base color inside (Color 2 for active, Color 3 for inactive)
+          circle.style.backgroundColor = isActive ? color2(group.color_hex) : color3(group.color_hex);
         }
 
         updateHarmonieMatches();
