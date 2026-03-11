@@ -154,6 +154,27 @@ body {
   margin-bottom: 16px;
 }
 
+.aroma-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px 12px;
+}
+
+.aroma-list li {
+  font-size: 14px;
+  color: var(--grey-1);
+  line-height: 1.7;
+  margin-bottom: 6px;
+  padding-left: 12px;
+  position: relative;
+}
+
+.aroma-list li::before {
+  content: "–";
+  position: absolute;
+  left: 0;
+}
+
 .page-subtitle {
   font-size: 14px;
   font-weight: 600;
@@ -161,6 +182,7 @@ body {
   letter-spacing: 1px;
   color: var(--black);
   margin: 24px 0 8px;
+  text-decoration: none;
 }
 
 .taste-list {
