@@ -321,7 +321,6 @@ function renderGeschmack(ingredient) {
     const label = document.createElement('span');
     label.className = 'quarter-label';
     label.textContent = t.label;
-    label.style.color = colorVar;
     item.appendChild(label);
 
     container.appendChild(item);
