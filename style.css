@@ -51,9 +51,11 @@ body {
   color: var(--black);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  padding: 0 20px 60px;
+  padding: 0 16px 60px;
   max-width: 480px;
   margin: 0 auto;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* Screen reader only */
@@ -305,7 +307,9 @@ body {
 .zutaten-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .zutaten-item {
@@ -313,7 +317,9 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 16px 4px;
+  padding: 12px 2px;
+  min-width: 0;
+  word-break: break-word;
   background: #fafafa;
   border-radius: 8px;
   cursor: pointer;
