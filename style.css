@@ -68,6 +68,264 @@ body {
   border: 0;
 }
 
+/* ============================================
+   VIEW SYSTEM
+   ============================================ */
+.view {
+  min-height: 100vh;
+}
+
+/* ============================================
+   SPLASH SCREEN
+   ============================================ */
+#view-splash {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.splash-circles {
+  display: grid;
+  grid-template-columns: repeat(3, 28px);
+  gap: 10px;
+}
+
+.splash-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  transition: background-color 0.4s ease;
+}
+
+/* ============================================
+   MAIN MENU
+   ============================================ */
+#view-menu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+.menu-option {
+  font-size: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--black);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.2s ease;
+}
+
+.menu-option:active {
+  color: var(--grey-2);
+}
+
+/* ============================================
+   CONTENT PAGES (THEORIE / PRAXIS)
+   ============================================ */
+.content-page {
+  padding: 40px 0 60px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--black);
+  margin-bottom: 24px;
+}
+
+.page-body {
+  font-size: 14px;
+  color: var(--grey-1);
+  line-height: 1.7;
+}
+
+.page-body p {
+  margin-bottom: 16px;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--black);
+  margin: 24px 0 8px;
+}
+
+.taste-list {
+  margin: 12px 0 20px;
+}
+
+.taste-item {
+  font-size: 14px;
+  color: var(--grey-1);
+  line-height: 1.7;
+  margin-bottom: 8px;
+}
+
+.taste-item strong {
+  color: var(--black);
+  font-weight: 600;
+}
+
+/* Moleküle groups in THEORIE */
+.gruppe-block {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.gruppe-block:last-child {
+  border-bottom: none;
+}
+
+.gruppe-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--black);
+  margin-bottom: 4px;
+}
+
+.gruppe-descriptor {
+  font-size: 13px;
+  color: var(--grey-2);
+  font-style: italic;
+  margin-bottom: 8px;
+}
+
+.maillard-note {
+  font-size: 13px;
+  color: var(--grey-2);
+  font-style: italic;
+}
+
+.placeholder-text {
+  color: var(--grey-2);
+  font-style: italic;
+}
+
+/* Page navigation arrow */
+.page-nav {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0 0;
+}
+
+.page-nav {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  padding: 32px 0 0;
+}
+
+.page-arrow {
+  font-size: 32px;
+  color: var(--grey-1);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.2s ease;
+  padding: 8px 16px;
+}
+
+.page-arrow:active {
+  color: var(--grey-2);
+}
+
+/* ============================================
+   ZUTATEN DIRECTORY
+   ============================================ */
+.zutaten-page {
+  padding: 24px 0 60px;
+}
+
+.zutaten-search-wrap {
+  margin-bottom: 24px;
+}
+
+.zutaten-search {
+  width: 100%;
+  padding: 12px 16px;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--black);
+  background: var(--white);
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.zutaten-search:focus {
+  outline: none;
+  border-color: var(--grey-1);
+}
+
+.zutaten-search::placeholder {
+  color: var(--grey-3);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.zutaten-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.zutaten-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px 4px;
+  background: #fafafa;
+  border-radius: 8px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s ease;
+}
+
+.zutaten-item:active {
+  background: #f0f0f0;
+}
+
+.zutaten-item-name {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--grey-1);
+  line-height: 1.3;
+}
+
+/* Back navigation */
+.back-nav {
+  padding: 16px 0 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--grey-2);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.back-nav:active {
+  color: var(--grey-1);
+}
+
 /* --- Header / Ingredient Selector --- */
 #app-header {
   padding: 24px 0 12px;
@@ -106,7 +364,6 @@ body {
   letter-spacing: 1px;
   color: var(--black);
   padding: 8px 0 8px;
-  /* Reduced bottom padding */
 }
 
 .ingredient-main-desc {
@@ -198,14 +455,13 @@ body {
 
 .taste-square {
   width: 100%;
-  max-width: 64px;
+  max-width: 48px;
   aspect-ratio: 1;
   border-radius: 4px;
-  /* soft edges */
 }
 
 .quarter-label {
-  font-size: 10px;
+  font-size: 11.5px;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -307,7 +563,7 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--grey-2);
+  color: var(--grey-1);
   margin-bottom: 6px;
 }
 
@@ -402,7 +658,7 @@ body {
 
 .aroma-slider-handle {
   position: absolute;
-  top: -6px;
+  top: -12px;
   left: 50%;
   transform: translateX(-50%);
   width: 12px;
@@ -413,7 +669,7 @@ body {
 
 /* Phase info */
 .aroma-phase-info {
-  padding: 12px 0 0;
+  padding: 0 0 8px;
   min-height: 40px;
 }
 
@@ -468,7 +724,7 @@ body {
 }
 
 .harmonie-name.main-ingredient {
-  color: var(--grey-2);
+  color: var(--grey-1);
 }
 
 .harmonie-name.match-ingredient {
@@ -528,6 +784,16 @@ body {
   }
 
   .harmonie-circle {
+    width: 32px;
+    height: 32px;
+  }
+
+  .splash-circles {
+    grid-template-columns: repeat(3, 32px);
+    gap: 12px;
+  }
+
+  .splash-circle {
     width: 32px;
     height: 32px;
   }

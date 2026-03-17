@@ -39,17 +39,129 @@ let currentGroupTemps = [];
 let currentPhases = [];
 let allIngredientGroups = {}; // ingredientId -> [slot numbers]
 
+// --- Navigation ---
+function navigateTo(viewName) {
+  // Hide all views
+  document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+
+  const target = document.getElementById('view-' + viewName);
+  if (target) {
+    // Full-screen centered views
+    if (viewName === 'splash' || viewName === 'menu') {
+      target.style.display = 'flex';
+    } else {
+      target.style.display = 'block';
+    }
+  }
+
+  // Scroll to top
+  window.scrollTo(0, 0);
+}
+
 // --- Init ---
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     await loadGroups();
     await loadIngredients();
     setupSectionToggles();
+    setupNavigation();
+    runSplashAnimation();
     console.log('App initialized. Groups:', allGroups.length, 'Ingredients:', allIngredients.length);
   } catch (err) {
     console.error('Init error:', err);
   }
 });
+
+// --- Navigation Setup ---
+function setupNavigation() {
+  // Menu options
+  document.querySelectorAll('.menu-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      navigateTo(opt.dataset.target);
+    });
+  });
+
+  // Page arrows (THEORIE/PRAXIS navigation)
+  document.querySelectorAll('.page-arrow').forEach(arrow => {
+    arrow.addEventListener('click', () => {
+      navigateTo(arrow.dataset.target);
+    });
+  });
+
+  // Back to ZUTATEN from ingredient view
+  const backNav = document.getElementById('back-to-zutaten');
+  if (backNav) {
+    backNav.addEventListener('click', () => {
+      navigateTo(backNav.dataset.target);
+    });
+  }
+
+  // Back to menu links
+  document.querySelectorAll('.page-back-to-menu').forEach(el => {
+    el.addEventListener('click', () => {
+      navigateTo(el.dataset.target);
+    });
+  });
+
+  // ZUTATEN search
+  const searchInput = document.getElementById('zutaten-search');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      renderZutatenGrid(searchInput.value.trim());
+    });
+  }
+}
+
+// --- Splash Animation ---
+function runSplashAnimation() {
+  const container = document.getElementById('splash-circles');
+  container.innerHTML = '';
+
+  // Default group colors if groups not loaded yet
+  const defaultColors = [
+    '#2F80ED', '#6F42C1', '#C2185B',
+    '#E91E63', '#D32F2F', '#F57C00',
+    '#B6A400', '#4CAF50', '#006064'
+  ];
+
+  const circles = [];
+  for (let i = 0; i < 9; i++) {
+    const hex = allGroups[i]?.color_hex || defaultColors[i];
+    const circle = document.createElement('div');
+    circle.className = 'splash-circle';
+    circle.style.backgroundColor = color3(hex);
+    circle.dataset.hex = hex;
+    container.appendChild(circle);
+    circles.push(circle);
+  }
+
+  // Shuffle order for random light-up
+  const order = Array.from({ length: 9 }, (_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+
+  // Light up one by one
+  const delay = 200; // ms between each
+  order.forEach((idx, step) => {
+    setTimeout(() => {
+      const c = circles[idx];
+      c.style.backgroundColor = color2(c.dataset.hex);
+    }, step * delay);
+  });
+
+  // After all lit up, fade out and show menu
+  const totalTime = 9 * delay + 600;
+  setTimeout(() => {
+    const splash = document.getElementById('view-splash');
+    splash.style.transition = 'opacity 0.5s ease';
+    splash.style.opacity = '0';
+    setTimeout(() => {
+      navigateTo('menu');
+    }, 500);
+  }, totalTime);
+}
 
 // --- Data Loading ---
 async function loadGroups() {
@@ -72,6 +184,41 @@ async function loadIngredients() {
   select.addEventListener('change', (e) => {
     if (e.target.value) loadIngredient(e.target.value);
   });
+
+  // Render ZUTATEN grid
+  renderZutatenGrid('');
+}
+
+// --- ZUTATEN Directory ---
+function renderZutatenGrid(filter) {
+  const grid = document.getElementById('zutaten-grid');
+  grid.innerHTML = '';
+
+  const lowerFilter = filter.toLowerCase();
+  const filtered = allIngredients.filter(ing =>
+    ing.name_de.toLowerCase().includes(lowerFilter)
+  );
+
+  filtered.forEach(ing => {
+    const item = document.createElement('div');
+    item.className = 'zutaten-item';
+    item.addEventListener('click', () => {
+      openIngredient(ing.id);
+    });
+
+    const name = document.createElement('div');
+    name.className = 'zutaten-item-name';
+    name.textContent = ing.name_de;
+    item.appendChild(name);
+
+    grid.appendChild(item);
+  });
+}
+
+function openIngredient(id) {
+  navigateTo('ingredient');
+  document.getElementById('ingredient-select').value = id;
+  loadIngredient(id);
 }
 
 async function loadIngredient(id) {
@@ -446,22 +593,18 @@ function renderAromaentfaltung() {
     slider.style.left = (pct * 100) + '%';
 
     // Update bar colors based on slider position
-    // Active squares BEFORE slider → solid Color 1
-    // Active squares AT or AFTER slider → Color 2
-    // Inactive squares → Color 3
+    // If slider touches active range → whole active segment = Color 1
+    // If slider is outside active range → whole active segment = Color 2
+    // Inactive squares → always Color 3
     barElements.forEach(({ squares, hex, startSquare, endSquare }) => {
+      const sliderTouchesActive = squareIndex >= startSquare && squareIndex < endSquare;
       squares.forEach((sq, i) => {
         const isActive = sq.dataset.active === '1';
-        if (isActive && i <= squareIndex) {
-          // Fill active path up to slider with solid Color 1
-          sq.style.backgroundColor = color1(hex);
-          sq.style.borderRight = 'none'; // no increment lines in active filled section
-        } else if (isActive) {
-          sq.style.backgroundColor = color2(hex);
+        if (isActive) {
+          sq.style.backgroundColor = sliderTouchesActive ? color1(hex) : color2(hex);
           sq.style.borderRight = 'none';
         } else {
           sq.style.backgroundColor = color3(hex);
-          // Subtle increment lines on inactive only
           if (i < 16) {
             sq.style.borderRight = '1px solid rgba(255,255,255,0.3)';
           }
@@ -622,7 +765,7 @@ function createHarmonieRow(name, activeSlots, isMain, onNavigate) {
           // Select — add Color 1 outline, inside retains base color
           circle.dataset.selected = '1';
           harmonieSelectedSlots.add(group.slot);
-          circle.style.boxShadow = `0 0 0 2.5px ${color1(group.color_hex)}`;
+          circle.style.boxShadow = `inset 0 0 0 3px ${color1(group.color_hex)}`;
           // Keep base color inside (Color 2 for active, Color 3 for inactive)
           circle.style.backgroundColor = isActive ? color2(group.color_hex) : color3(group.color_hex);
         }
@@ -669,9 +812,7 @@ function updateHarmonieMatches() {
       false,
       () => {
         // Navigate to this ingredient
-        document.getElementById('ingredient-select').value = ingredient.id;
-        loadIngredient(ingredient.id);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        openIngredient(ingredient.id);
       }
     );
     matchesContainer.appendChild(row);
