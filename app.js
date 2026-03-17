@@ -341,14 +341,15 @@ function renderGeschmack(ingredient) {
     >= 2 = Level 2 Active: Grey 1
   */
 
+  const squares = [];
   tastes.forEach(t => {
     const value = ingredient[t.key] || 0;
 
-    let colorVar = 'var(--grey-3)';
+    let targetColor = 'var(--grey-3)';
     if (value === 1) {
-      colorVar = 'var(--grey-2)';
+      targetColor = 'var(--grey-2)';
     } else if (value >= 2) {
-      colorVar = 'var(--grey-1)';
+      targetColor = 'var(--grey-1)';
     }
 
     const item = document.createElement('div');
@@ -356,7 +357,8 @@ function renderGeschmack(ingredient) {
 
     const square = document.createElement('div');
     square.className = 'taste-square';
-    square.style.backgroundColor = colorVar;
+    square.style.backgroundColor = 'var(--grey-3)';
+    square.dataset.targetColor = targetColor;
 
     item.appendChild(square);
 
@@ -366,6 +368,16 @@ function renderGeschmack(ingredient) {
     item.appendChild(label);
 
     container.appendChild(item);
+    squares.push(square);
+  });
+
+  // Staggered animation
+  requestAnimationFrame(() => {
+    squares.forEach((sq, i) => {
+      setTimeout(() => {
+        sq.style.backgroundColor = sq.dataset.targetColor;
+      }, i * 100);
+    });
   });
 
   // Set description for GESCHMACK explicitly (if you ever need a sub-description, left blank for now so main desc shines below title)
@@ -395,14 +407,16 @@ function renderMolekuele() {
   });
 
   // Render 9 circles
+  const circleEls = [];
   allGroups.forEach(group => {
     const isActive = activeSlots.has(group.slot);
     const circle = document.createElement('div');
     circle.className = 'mol-circle';
-    // Active = Color 2, Inactive = Color 3
-    circle.style.backgroundColor = isActive ? color2(group.color_hex) : color3(group.color_hex);
+    // Start all at faded color3
+    circle.style.backgroundColor = color3(group.color_hex);
     circle.dataset.slot = group.slot;
     circle.dataset.active = isActive ? '1' : '0';
+    circle.dataset.targetBg = isActive ? color2(group.color_hex) : color3(group.color_hex);
 
     const num = document.createElement('span');
     num.className = 'mol-number';
@@ -435,6 +449,21 @@ function renderMolekuele() {
     });
 
     grid.appendChild(circle);
+    circleEls.push(circle);
+  });
+
+  // Staggered animation in random order
+  const order = Array.from({ length: circleEls.length }, (_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  requestAnimationFrame(() => {
+    order.forEach((idx, step) => {
+      setTimeout(() => {
+        circleEls[idx].style.backgroundColor = circleEls[idx].dataset.targetBg;
+      }, step * 80);
+    });
   });
 
   // Set description
