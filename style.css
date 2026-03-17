@@ -148,7 +148,7 @@ body {
 
 .page-body {
   font-size: 14px;
-  color: var(--grey-1);
+  color: var(--black);
   line-height: 1.7;
 }
 
@@ -226,19 +226,19 @@ body {
 .gruppe-descriptor {
   font-size: 13px;
   color: var(--grey-2);
-  font-style: italic;
+  font-style: normal;
   margin-bottom: 8px;
 }
 
 .maillard-note {
   font-size: 13px;
   color: var(--grey-2);
-  font-style: italic;
+  font-style: normal;
 }
 
 .placeholder-text {
   color: var(--grey-2);
-  font-style: italic;
+  font-style: normal;
 }
 
 /* Page navigation arrow */
