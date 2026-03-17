@@ -201,6 +201,12 @@ body {
   font-weight: 600;
 }
 
+/* Moleküle section title */
+.gruppe-section-title {
+  font-size: 17px;
+  margin-bottom: 20px;
+}
+
 /* Moleküle groups in THEORIE */
 .gruppe-block {
   margin-bottom: 24px;
@@ -219,6 +225,24 @@ body {
   letter-spacing: 0.5px;
   color: var(--black);
   margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gruppe-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.gruppe-dot-spacer {
+  display: inline-block;
+  width: 10px;
+  flex-shrink: 0;
+  margin-right: 8px;
 }
 
 .gruppe-descriptor {
