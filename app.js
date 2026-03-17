@@ -394,6 +394,10 @@ function renderMolekuele() {
 
     grid.appendChild(circle);
   });
+
+  // Set description
+  const descText = document.getElementById('molekuele-desc-text');
+  descText.textContent = 'Hier sind die aktiven Molekülgruppen der Zutat zu sehen. Die ausgeschlüsselten Duftnoten jedes Aromas und dessen Löslichkeit werden duch anklicken sichtbar. (Manche Aromen lösen "zusätzlich" einen trigeminalen Reiz aus, weshalb gelegentlich die 9.Gruppe ohne eigene Moleküle aktiv ist.)';
 }
 
 function clearMolSelection(grid) {
