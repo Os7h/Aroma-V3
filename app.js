@@ -328,7 +328,7 @@ function renderGeschmack(ingredient) {
 
   // Set description for GESCHMACK explicitly (if you ever need a sub-description, left blank for now so main desc shines below title)
   const descText = document.getElementById('geschmack-desc-text');
-  descText.textContent = 'Dieser Schema zeigt an, welche der fünf Geschmacksrichtungen in dem Gewürz schwach - heller Grauton - oder stark - dunkler Grauton - aktiv sind. Ist ein Grundgeschmack nicht aktiv bleibt die Fläche fast weiß.';
+  descText.textContent = 'Dieses Schema zeigt an, welche der fünf Geschmacksrichtungen in dem Gewürz schwach - heller Grauton - oder stark - dunkler Grauton - aktiv sind. Ist ein Grundgeschmack nicht aktiv bleibt die Farbe ganz hell.';
 }
 
 // ============================================
