@@ -242,6 +242,10 @@ body {
   transform: scale(0.93);
 }
 
+.mol-circle.selected {
+  /* Inset ring — color set via JS */
+}
+
 .mol-circle .mol-number {
   font-size: 18px;
   font-weight: 700;
@@ -269,7 +273,14 @@ body {
   font-size: 13px;
   color: var(--grey-2);
   font-style: normal;
-  margin-bottom: 16px;
+  margin-bottom: 4px;
+}
+
+.mol-detail-underline {
+  height: 3px;
+  width: 66%;
+  border-radius: 2px;
+  margin: 4px 0 16px;
 }
 
 .mol-detail-heading {
@@ -362,15 +373,15 @@ body {
 
 .aroma-bar-row {
   display: flex;
-  gap: 1px;
-  margin-bottom: 4px;
+  gap: 0;
+  margin-bottom: 3px;
   border-radius: 3px;
   overflow: hidden;
 }
 
 .aroma-bar-square {
   flex: 1;
-  height: 16px;
+  height: 12px;
   transition: background-color 0.15s ease;
 }
 
@@ -391,15 +402,13 @@ body {
 
 .aroma-slider-handle {
   position: absolute;
-  top: -8px;
+  top: -6px;
   left: 50%;
   transform: translateX(-50%);
-  width: 16px;
-  height: 16px;
+  width: 12px;
+  height: 12px;
   background: var(--grey-2);
   border-radius: 50%;
-  border: 2px solid var(--white);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Phase info */
