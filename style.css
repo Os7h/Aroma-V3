@@ -1,0 +1,525 @@
+/* ============================================
+   AROMA EXPLORER V2 — GLOBAL STYLES
+   Mobile-first, white background, clean typography
+   ============================================ */
+
+/* --- Reset & Base --- */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* Typography Colors */
+  --black: #000000;
+  --grey-1: #555555;
+  --grey-2: #b3b3b3;
+  --grey-3: #e0e0e0;
+  --white: #ffffff;
+  --bg: #ffffff;
+
+  /* Aroma Group Colors (from Supabase) */
+  --group-1: #2F80ED;
+  --group-2: #6F42C1;
+  --group-3: #C2185B;
+  --group-4: #E91E63;
+  --group-5: #D32F2F;
+  --group-6: #F57C00;
+  --group-7: #B6A400;
+  --group-8: #4CAF50;
+  --group-9: #006064;
+
+  /* Taste quarters */
+  --taste-active: #555555;
+  --taste-inactive: #d0d0d0;
+
+  /* Font */
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--black);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  padding: 0 20px 60px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* --- Header / Ingredient Selector --- */
+#app-header {
+  padding: 24px 0 12px;
+}
+
+.ingredient-selector select {
+  width: 100%;
+  padding: 12px 16px;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--black);
+  background: var(--white);
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23555' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ingredient-selector select:focus {
+  outline: none;
+  border-color: var(--grey-1);
+}
+
+/* --- Ingredient Title & Main Description --- */
+.ingredient-title {
+  font-size: 28px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--black);
+  padding: 8px 0 8px;
+  /* Reduced bottom padding */
+}
+
+.ingredient-main-desc {
+  font-size: 14px;
+  color: var(--grey-1);
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+/* --- Listing Sections --- */
+.listing-section {
+  margin-bottom: 32px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.section-headline {
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--black);
+}
+
+.toggle-arrow {
+  font-size: 14px;
+  color: var(--grey-2);
+  transition: transform 0.3s ease;
+}
+
+.section-header.open .toggle-arrow {
+  transform: rotate(180deg);
+}
+
+/* Section body — no longer hidden by default */
+.section-body {
+  /* Always visible charts/content */
+}
+
+.section-body-inner {
+  padding: 16px 0;
+}
+
+/* Section description — hidden, slides under headline */
+.section-description {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+}
+
+.section-description.open {
+  max-height: 200px;
+}
+
+.section-description p {
+  padding: 8px 0 4px;
+  font-size: 13px;
+  color: var(--grey-2);
+  line-height: 1.6;
+  font-style: normal;
+}
+
+/* ============================================
+   GESCHMACK — Squares
+   ============================================ */
+.geschmack-quarters {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 20px 0 8px;
+  gap: 4px;
+}
+
+.quarter-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.taste-square {
+  width: 100%;
+  max-width: 64px;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  /* soft edges */
+}
+
+.quarter-label {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 6px;
+  text-align: center;
+}
+
+/* ============================================
+   MOLEKÜLE — Circle grid
+   ============================================ */
+.molekuele-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 20px 10px;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.mol-circle {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mol-circle:active {
+  transform: scale(0.93);
+}
+
+.mol-circle .mol-number {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--white);
+  pointer-events: none;
+  position: relative;
+  z-index: 1;
+}
+
+/* Molecule detail panel */
+.molekuele-detail {
+  padding: 16px 0;
+}
+
+.mol-detail-group-title {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--black);
+  margin-bottom: 2px;
+}
+
+.mol-detail-descriptor {
+  font-size: 13px;
+  color: var(--grey-2);
+  font-style: normal;
+  margin-bottom: 16px;
+}
+
+.mol-detail-heading {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--black);
+  margin-bottom: 8px;
+}
+
+.mol-detail-molecule {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.mol-detail-molecule:last-child {
+  border-bottom: none;
+}
+
+.mol-detail-mol-name {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--grey-2);
+  margin-bottom: 6px;
+}
+
+.mol-detail-props {
+  display: flex;
+  gap: 24px;
+}
+
+.mol-detail-prop {
+  flex: 1;
+}
+
+.mol-detail-prop-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--grey-1);
+  margin-bottom: 2px;
+}
+
+.mol-detail-prop-value {
+  font-size: 12px;
+  color: var(--grey-1);
+  line-height: 1.4;
+}
+
+/* ============================================
+   AROMAENTFALTUNG — Temperature chart
+   ============================================ */
+.aroma-chart {
+  padding: 20px 0 8px;
+  width: 100%;
+  overflow-x: visible;
+  position: relative;
+  touch-action: none;
+}
+
+.aroma-chart-inner {
+  position: relative;
+  width: 100%;
+}
+
+/* Scale numbers */
+.aroma-scale {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 0 8px;
+  position: relative;
+}
+
+.aroma-scale-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--grey-2);
+  text-align: center;
+}
+
+/* Temperature bars */
+.aroma-bars {
+  position: relative;
+}
+
+.aroma-bar-row {
+  display: flex;
+  gap: 1px;
+  margin-bottom: 4px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.aroma-bar-square {
+  flex: 1;
+  height: 16px;
+  transition: background-color 0.15s ease;
+}
+
+/* Slider */
+.aroma-slider {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  background: var(--grey-2);
+  cursor: grab;
+  z-index: 10;
+  border-radius: 1px;
+}
+
+.aroma-slider:active {
+  cursor: grabbing;
+}
+
+.aroma-slider-handle {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 16px;
+  background: var(--grey-2);
+  border-radius: 50%;
+  border: 2px solid var(--white);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Phase info */
+.aroma-phase-info {
+  padding: 12px 0 0;
+  min-height: 40px;
+}
+
+.aroma-phase-name {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--black);
+}
+
+.aroma-phase-desc {
+  font-size: 13px;
+  color: var(--grey-2);
+  font-style: normal;
+  margin-top: 2px;
+}
+
+.aroma-temp-label {
+  font-size: 11px;
+  color: var(--grey-2);
+  margin-top: 4px;
+}
+
+/* ============================================
+   HARMONIE — Ingredient circle rows
+   ============================================ */
+.harmonie-main,
+.harmonie-matches {
+  padding: 0;
+}
+
+.harmonie-row {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.harmonie-row:last-child {
+  border-bottom: none;
+}
+
+.harmonie-name {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.harmonie-name.main-ingredient {
+  color: var(--grey-2);
+}
+
+.harmonie-name.match-ingredient {
+  color: var(--grey-1);
+}
+
+.harmonie-circles {
+  display: flex;
+  gap: 6px;
+}
+
+.harmonie-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+.harmonie-circle.main-interactive {
+  cursor: pointer;
+}
+
+.harmonie-circle.selected-active {
+  /* Will be set via JS — full color 1 */
+}
+
+.harmonie-circle.selected-inactive {
+  /* Outline only — Color 1 outline, transparent fill */
+  background: transparent !important;
+}
+
+/* ============================================
+   Responsive — Desktop
+   ============================================ */
+@media (min-width: 600px) {
+  body {
+    max-width: 520px;
+    padding: 0 32px 60px;
+  }
+
+  .geschmack-quarters {
+    gap: 8px;
+  }
+
+  .quarter-svg {
+    max-width: 72px;
+  }
+
+  .molekuele-grid {
+    max-width: 340px;
+    gap: 20px;
+  }
+
+  .harmonie-circle {
+    width: 32px;
+    height: 32px;
+  }
+}

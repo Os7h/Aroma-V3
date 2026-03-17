@@ -1,0 +1,668 @@
+/* ============================================
+   AROMA EXPLORER V2 — Main Application
+   ============================================ */
+
+// --- Supabase Init ---
+const SUPABASE_URL = 'https://jajfpjkhbuujaggtgkjh.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphamZwamtoYnV1amFnZ3Rna2poIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1OTU4OTAsImV4cCI6MjA4NTE3MTg5MH0.yF1BzFmoux9zDNjebK6vaUcpZf53s0FXEJ3pVOJY-FU';
+
+// The Supabase UMD bundle exposes the createClient function on window.supabase
+const { createClient } = window.supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// --- Color Utility ---
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return { r, g, b };
+}
+
+function colorWithAlpha(hex, alpha) {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+// Color 1 = full color (alpha 1.0)
+// Color 2 = moderate (alpha 0.70)
+// Color 3 = faded almost white (alpha 0.08)
+function color1(hex) { return hex; }
+function color2(hex) { return colorWithAlpha(hex, 0.70); }
+function color3(hex) { return colorWithAlpha(hex, 0.08); }
+
+// --- Global State ---
+let allIngredients = [];
+let allGroups = [];
+let currentIngredient = null;
+let currentMolecules = [];
+let currentGroupTemps = [];
+let currentPhases = [];
+let allIngredientGroups = {}; // ingredientId -> [slot numbers]
+
+// --- Init ---
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    await loadGroups();
+    await loadIngredients();
+    setupSectionToggles();
+    console.log('App initialized. Groups:', allGroups.length, 'Ingredients:', allIngredients.length);
+  } catch (err) {
+    console.error('Init error:', err);
+  }
+});
+
+// --- Data Loading ---
+async function loadGroups() {
+  const { data } = await sb.from('aroma_groups').select('*').order('slot');
+  allGroups = data || [];
+}
+
+async function loadIngredients() {
+  const { data } = await sb.from('ingredients').select('*').order('name_de');
+  allIngredients = (data || []).filter(i => i.name_de && i.name_de !== '-');
+
+  const select = document.getElementById('ingredient-select');
+  allIngredients.forEach(ing => {
+    const opt = document.createElement('option');
+    opt.value = ing.id;
+    opt.textContent = ing.name_de;
+    select.appendChild(opt);
+  });
+
+  select.addEventListener('change', (e) => {
+    if (e.target.value) loadIngredient(e.target.value);
+  });
+}
+
+async function loadIngredient(id) {
+  const ingredient = allIngredients.find(i => i.id === id);
+  if (!ingredient) return;
+  currentIngredient = ingredient;
+
+  // Show title and main desc
+  const titleEl = document.getElementById('ingredient-title');
+  titleEl.textContent = ingredient.name_de.toUpperCase();
+  titleEl.style.display = 'block';
+
+  const mainDescEl = document.getElementById('ingredient-main-desc');
+  mainDescEl.textContent = ingredient.taste_description_de || '';
+  mainDescEl.style.display = ingredient.taste_description_de ? 'block' : 'none';
+
+  // Fetch all related data in parallel
+  const [molRes, groupTempRes, phaseRes] = await Promise.all([
+    sb.from('ingredient_molecules')
+      .select('molecule_id, molecules(id, name_de, group_id, descriptors_de, solubility_de, aroma_groups(slot, title_de, name_de, descriptor_de, color_hex))')
+      .eq('ingredient_id', id),
+    sb.from('ingredient_group_temperature')
+      .select('group_id, temp_start_c, temp_end_c, behavior_description_de, aroma_groups(slot, color_hex, name_de)')
+      .eq('ingredient_id', id),
+    sb.from('ingredient_temperature_phases')
+      .select('phase_name, temp_start_c, temp_end_c, description_de')
+      .eq('ingredient_id', id)
+      .order('temp_start_c')
+  ]);
+
+  currentMolecules = molRes.data || [];
+  currentGroupTemps = groupTempRes.data || [];
+  currentPhases = phaseRes.data || [];
+
+  // Render all sections
+  renderGeschmack(ingredient);
+  renderMolekuele();
+  renderAromaentfaltung();
+  renderHarmonie();
+
+  // All listing bodies are permanent now. Ensure no description is open initially
+  document.querySelectorAll('.section-description').forEach(d => d.classList.remove('open'));
+  document.querySelectorAll('.section-header').forEach(h => h.classList.remove('open'));
+}
+
+// --- Section Toggle ---
+function setupSectionToggles() {
+  document.querySelectorAll('.section-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const desc = header.parentElement.querySelector('.section-description');
+
+      // Toggle description
+      if (desc) desc.classList.toggle('open');
+      header.classList.toggle('open');
+    });
+  });
+}
+
+// ============================================
+// GESCHMACK
+// ============================================
+function renderGeschmack(ingredient) {
+  const container = document.getElementById('geschmack-quarters');
+  container.innerHTML = '';
+
+  const tastes = [
+    { key: 'taste_sweet', label: 'Süß' },
+    { key: 'taste_sour', label: 'Sauer' },
+    { key: 'taste_salty', label: 'Salzig' },
+    { key: 'taste_bitter', label: 'Bitter' },
+    { key: 'taste_umami', label: 'Umami' }
+  ];
+
+  /*
+    Grey levels:
+    0 = Inactive: Grey 3
+    1 = Level 1 Active: Grey 2
+    >= 2 = Level 2 Active: Grey 1
+  */
+
+  tastes.forEach(t => {
+    const value = ingredient[t.key] || 0;
+
+    let colorVar = 'var(--grey-3)';
+    if (value === 1) {
+      colorVar = 'var(--grey-2)';
+    } else if (value >= 2) {
+      colorVar = 'var(--grey-1)';
+    }
+
+    const item = document.createElement('div');
+    item.className = 'quarter-item';
+
+    const square = document.createElement('div');
+    square.className = 'taste-square';
+    square.style.backgroundColor = colorVar;
+
+    item.appendChild(square);
+
+    const label = document.createElement('span');
+    label.className = 'quarter-label';
+    label.textContent = t.label;
+    label.style.color = colorVar;
+    item.appendChild(label);
+
+    container.appendChild(item);
+  });
+
+  // Set description for GESCHMACK explicitly (if you ever need a sub-description, left blank for now so main desc shines below title)
+  const descText = document.getElementById('geschmack-desc-text');
+  descText.textContent = '';
+}
+
+// ============================================
+// MOLEKÜLE
+// ============================================
+function renderMolekuele() {
+  const grid = document.getElementById('molekuele-circles');
+  const detail = document.getElementById('molekuele-detail');
+  grid.innerHTML = '';
+  detail.innerHTML = '';
+  detail.style.display = 'none';
+
+  // Determine which groups are active
+  const activeSlots = new Set();
+  currentMolecules.forEach(m => {
+    if (m.molecules?.aroma_groups?.slot) {
+      activeSlots.add(m.molecules.aroma_groups.slot);
+    }
+  });
+
+  // Render 9 circles
+  allGroups.forEach(group => {
+    const isActive = activeSlots.has(group.slot);
+    const circle = document.createElement('div');
+    circle.className = 'mol-circle';
+    circle.style.backgroundColor = isActive ? color1(group.color_hex) : color3(group.color_hex);
+    circle.dataset.slot = group.slot;
+
+    const num = document.createElement('span');
+    num.className = 'mol-number';
+    num.textContent = group.slot;
+    circle.appendChild(num);
+
+    circle.addEventListener('click', () => {
+      // Highlight selected circle
+      grid.querySelectorAll('.mol-circle').forEach(c => {
+        c.style.boxShadow = 'none';
+        c.style.transform = '';
+      });
+      if (isActive) {
+        circle.style.boxShadow = `0 0 0 3px ${colorWithAlpha(group.color_hex, 0.4)}`;
+        showMoleculeDetail(group);
+      }
+    });
+
+    grid.appendChild(circle);
+  });
+}
+
+function showMoleculeDetail(group) {
+  const detail = document.getElementById('molekuele-detail');
+  detail.innerHTML = '';
+  detail.style.display = 'block';
+
+  // Group title
+  const title = document.createElement('div');
+  title.className = 'mol-detail-group-title';
+  title.textContent = group.title_de;
+  detail.appendChild(title);
+
+  // Descriptor
+  const desc = document.createElement('div');
+  desc.className = 'mol-detail-descriptor';
+  desc.textContent = group.descriptor_de;
+  detail.appendChild(desc);
+
+  // Molecules heading
+  const heading = document.createElement('div');
+  heading.className = 'mol-detail-heading';
+  heading.textContent = 'MOLEKÜLE';
+  detail.appendChild(heading);
+
+  // Filter molecules for this group
+  const groupMols = currentMolecules.filter(m =>
+    m.molecules?.aroma_groups?.slot === group.slot
+  );
+
+  groupMols.forEach(m => {
+    const mol = m.molecules;
+    const molDiv = document.createElement('div');
+    molDiv.className = 'mol-detail-molecule';
+
+    // Molecule name
+    const name = document.createElement('div');
+    name.className = 'mol-detail-mol-name';
+    name.textContent = mol.name_de.toUpperCase();
+    molDiv.appendChild(name);
+
+    // Props row
+    const props = document.createElement('div');
+    props.className = 'mol-detail-props';
+
+    // AROMATIK
+    if (mol.descriptors_de) {
+      const aromProp = document.createElement('div');
+      aromProp.className = 'mol-detail-prop';
+      const aromLabel = document.createElement('div');
+      aromLabel.className = 'mol-detail-prop-label';
+      aromLabel.textContent = 'AROMATIK';
+      aromProp.appendChild(aromLabel);
+      const aromVal = document.createElement('div');
+      aromVal.className = 'mol-detail-prop-value';
+      aromVal.textContent = mol.descriptors_de;
+      aromProp.appendChild(aromVal);
+      props.appendChild(aromProp);
+    }
+
+    // LÖSLICHKEIT
+    if (mol.solubility_de) {
+      const solProp = document.createElement('div');
+      solProp.className = 'mol-detail-prop';
+      const solLabel = document.createElement('div');
+      solLabel.className = 'mol-detail-prop-label';
+      solLabel.textContent = 'LÖSLICHKEIT';
+      solProp.appendChild(solLabel);
+      const solVal = document.createElement('div');
+      solVal.className = 'mol-detail-prop-value';
+      solVal.textContent = mol.solubility_de;
+      solProp.appendChild(solVal);
+      props.appendChild(solProp);
+    }
+
+    molDiv.appendChild(props);
+    detail.appendChild(molDiv);
+  });
+}
+
+// ============================================
+// AROMAENTFALTUNG
+// ============================================
+function renderAromaentfaltung() {
+  const chartContainer = document.getElementById('aroma-chart');
+  const phaseInfo = document.getElementById('aroma-phase-info');
+  chartContainer.innerHTML = '';
+  phaseInfo.innerHTML = '';
+
+  if (currentGroupTemps.length === 0) return;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'aroma-chart-inner';
+
+  // --- Scale row ---
+  const scaleRow = document.createElement('div');
+  scaleRow.className = 'aroma-scale';
+  scaleRow.style.display = 'flex';
+  scaleRow.style.position = 'relative';
+  scaleRow.style.padding = '0';
+  scaleRow.style.marginBottom = '8px';
+
+  const scaleLabels = [
+    { value: 0, pos: 0 },
+    { value: 50, pos: 50 / 170 * 100 },
+    { value: 100, pos: 100 / 170 * 100 },
+    { value: 150, pos: 150 / 170 * 100 },
+    { value: '°C', pos: 100 }
+  ];
+
+  scaleLabels.forEach(s => {
+    const lab = document.createElement('span');
+    lab.className = 'aroma-scale-label';
+    lab.textContent = s.value;
+    lab.style.position = 'absolute';
+    lab.style.left = s.pos + '%';
+    lab.style.transform = 'translateX(-50%)';
+    scaleRow.appendChild(lab);
+  });
+  scaleRow.style.height = '16px';
+  wrapper.appendChild(scaleRow);
+
+  // --- Bar rows ---
+  const barsContainer = document.createElement('div');
+  barsContainer.className = 'aroma-bars';
+
+  // Sort by slot
+  const sortedTemps = [...currentGroupTemps].sort((a, b) => a.aroma_groups.slot - b.aroma_groups.slot);
+
+  const barElements = []; // Store references for slider interaction
+
+  sortedTemps.forEach(gt => {
+    const group = gt.aroma_groups;
+    const hex = group.color_hex;
+    const startSquare = Math.floor(gt.temp_start_c / 10);
+    const endSquare = Math.floor(gt.temp_end_c / 10);
+
+    const row = document.createElement('div');
+    row.className = 'aroma-bar-row';
+    row.dataset.slot = group.slot;
+    row.dataset.start = startSquare;
+    row.dataset.end = endSquare;
+
+    const squares = [];
+    for (let i = 0; i < 17; i++) {
+      const sq = document.createElement('div');
+      sq.className = 'aroma-bar-square';
+      const isActiveSquare = (i >= startSquare && i < endSquare);
+      sq.dataset.active = isActiveSquare ? '1' : '0';
+      sq.dataset.index = i;
+      sq.style.backgroundColor = isActiveSquare ? color2(hex) : color3(hex);
+      sq.dataset.hex = hex;
+      sq.dataset.color2 = color2(hex);
+      sq.dataset.color3 = color3(hex);
+      sq.dataset.color1 = color1(hex);
+      row.appendChild(sq);
+      squares.push(sq);
+    }
+
+    barsContainer.appendChild(row);
+    barElements.push({ row, squares, hex, startSquare, endSquare, group });
+  });
+
+  wrapper.appendChild(barsContainer);
+
+  // --- Slider ---
+  const slider = document.createElement('div');
+  slider.className = 'aroma-slider';
+  const sliderHandle = document.createElement('div');
+  sliderHandle.className = 'aroma-slider-handle';
+  slider.appendChild(sliderHandle);
+
+  // Position slider initially at far left
+  slider.style.left = '0%';
+  slider.style.height = barsContainer.children.length * 20 + 'px';
+
+  wrapper.appendChild(slider);
+  chartContainer.appendChild(wrapper);
+
+  // --- Slider drag logic ---
+  let isDragging = false;
+  let sliderPosition = 0; // 0-170 degrees
+
+  function updateSlider(clientX) {
+    const rect = barsContainer.getBoundingClientRect();
+    let x = clientX - rect.left;
+    x = Math.max(0, Math.min(x, rect.width));
+    const pct = x / rect.width;
+    sliderPosition = Math.round(pct * 170);
+    const squareIndex = Math.min(Math.floor(sliderPosition / 10), 16);
+
+    slider.style.left = (pct * 100) + '%';
+
+    // Update bar colors based on slider position
+    barElements.forEach(({ squares, hex, startSquare, endSquare }) => {
+      squares.forEach((sq, i) => {
+        const isActive = sq.dataset.active === '1';
+        if (i === squareIndex && isActive) {
+          sq.style.backgroundColor = color1(hex);
+        } else if (isActive) {
+          sq.style.backgroundColor = color2(hex);
+        } else {
+          sq.style.backgroundColor = color3(hex);
+        }
+      });
+    });
+
+    // Show phase info
+    updatePhaseInfo(sliderPosition);
+  }
+
+  function updatePhaseInfo(temp) {
+    phaseInfo.innerHTML = '';
+    const phase = currentPhases.find(p => temp >= p.temp_start_c && temp < p.temp_end_c);
+
+    const tempLabel = document.createElement('div');
+    tempLabel.className = 'aroma-temp-label';
+    tempLabel.textContent = temp + '°C';
+    phaseInfo.appendChild(tempLabel);
+
+    if (phase) {
+      const pName = document.createElement('div');
+      pName.className = 'aroma-phase-name';
+      pName.textContent = 'PHASE ' + phase.phase_name;
+      phaseInfo.appendChild(pName);
+
+      const pDesc = document.createElement('div');
+      pDesc.className = 'aroma-phase-desc';
+      pDesc.textContent = phase.description_de || '';
+      phaseInfo.appendChild(pDesc);
+    }
+  }
+
+  // Mouse events
+  wrapper.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    updateSlider(e.clientX);
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (isDragging) updateSlider(e.clientX);
+  });
+  document.addEventListener('mouseup', () => { isDragging = false; });
+
+  // Touch events
+  wrapper.addEventListener('touchstart', (e) => {
+    isDragging = true;
+    updateSlider(e.touches[0].clientX);
+  }, { passive: true });
+  wrapper.addEventListener('touchmove', (e) => {
+    if (isDragging) {
+      e.preventDefault();
+      updateSlider(e.touches[0].clientX);
+    }
+  }, { passive: false });
+  wrapper.addEventListener('touchend', () => { isDragging = false; });
+
+  // Set description
+  const descText = document.getElementById('aromaentfaltung-desc-text');
+  descText.textContent = '';
+}
+
+// ============================================
+// HARMONIE
+// ============================================
+let harmonieSelectedSlots = new Set();
+
+async function renderHarmonie() {
+  const mainContainer = document.getElementById('harmonie-main');
+  const matchesContainer = document.getElementById('harmonie-matches');
+  mainContainer.innerHTML = '';
+  matchesContainer.innerHTML = '';
+  harmonieSelectedSlots.clear();
+
+  if (!currentIngredient) return;
+
+  // Get active group slots for current ingredient
+  const activeSlots = new Set();
+  currentMolecules.forEach(m => {
+    if (m.molecules?.aroma_groups?.slot) {
+      activeSlots.add(m.molecules.aroma_groups.slot);
+    }
+  });
+
+  // Render main ingredient row
+  const mainRow = createHarmonieRow(
+    currentIngredient.name_de,
+    activeSlots,
+    true, // is main ingredient
+    () => { } // no navigation for self
+  );
+  mainContainer.appendChild(mainRow);
+
+  // Preload all ingredient group data for matching
+  await preloadAllIngredientGroups();
+}
+
+async function preloadAllIngredientGroups() {
+  // Fetch all ingredient molecules with their group slots
+  const { data } = await sb
+    .from('ingredient_molecules')
+    .select('ingredient_id, molecules(aroma_groups(slot))');
+
+  allIngredientGroups = {};
+  (data || []).forEach(row => {
+    const slot = row.molecules?.aroma_groups?.slot;
+    if (!slot) return;
+    if (!allIngredientGroups[row.ingredient_id]) {
+      allIngredientGroups[row.ingredient_id] = new Set();
+    }
+    allIngredientGroups[row.ingredient_id].add(slot);
+  });
+}
+
+function createHarmonieRow(name, activeSlots, isMain, onNavigate) {
+  const row = document.createElement('div');
+  row.className = 'harmonie-row';
+
+  const nameEl = document.createElement('div');
+  nameEl.className = `harmonie-name ${isMain ? 'main-ingredient' : 'match-ingredient'}`;
+  nameEl.textContent = name.toUpperCase();
+  if (!isMain) {
+    nameEl.addEventListener('click', onNavigate);
+  }
+  row.appendChild(nameEl);
+
+  const circlesRow = document.createElement('div');
+  circlesRow.className = 'harmonie-circles';
+
+  allGroups.forEach(group => {
+    const isActive = activeSlots.has(group.slot);
+    const circle = document.createElement('div');
+    circle.className = 'harmonie-circle';
+    circle.dataset.slot = group.slot;
+    circle.dataset.groupActive = isActive ? '1' : '0';
+
+    if (isActive) {
+      circle.style.backgroundColor = color2(group.color_hex);
+    } else {
+      circle.style.backgroundColor = color3(group.color_hex);
+    }
+
+    // Main ingredient circles are interactive
+    if (isMain) {
+      circle.classList.add('main-interactive');
+      circle.dataset.selected = '0';
+
+      circle.addEventListener('click', () => {
+        const isSelected = circle.dataset.selected === '1';
+
+        if (isSelected) {
+          // Deselect
+          circle.dataset.selected = '0';
+          harmonieSelectedSlots.delete(group.slot);
+
+          if (isActive) {
+            circle.style.backgroundColor = color2(group.color_hex);
+            circle.style.border = 'none';
+            circle.style.boxSizing = 'border-box';
+          } else {
+            circle.style.backgroundColor = color3(group.color_hex);
+            circle.style.border = 'none';
+            circle.style.boxSizing = 'border-box';
+          }
+        } else {
+          // Select
+          circle.dataset.selected = '1';
+          harmonieSelectedSlots.add(group.slot);
+
+          if (isActive) {
+            // Active circle goes to Color 1 (filled)
+            circle.style.backgroundColor = color1(group.color_hex);
+            circle.style.border = 'none';
+          } else {
+            // Inactive circle gets Color 1 outline only
+            circle.style.backgroundColor = 'transparent';
+            circle.style.border = `2.5px solid ${color1(group.color_hex)}`;
+            circle.style.boxSizing = 'border-box';
+          }
+        }
+
+        updateHarmonieMatches();
+      });
+    }
+
+    circlesRow.appendChild(circle);
+  });
+
+  row.appendChild(circlesRow);
+  return row;
+}
+
+function updateHarmonieMatches() {
+  const matchesContainer = document.getElementById('harmonie-matches');
+  matchesContainer.innerHTML = '';
+
+  if (harmonieSelectedSlots.size === 0) return;
+
+  // Find ingredients that have ALL selected slots active
+  const matches = [];
+
+  allIngredients.forEach(ing => {
+    if (ing.id === currentIngredient.id) return;
+    const ingSlots = allIngredientGroups[ing.id] || new Set();
+
+    let allMatch = true;
+    harmonieSelectedSlots.forEach(slot => {
+      if (!ingSlots.has(slot)) allMatch = false;
+    });
+
+    if (allMatch) {
+      matches.push({ ingredient: ing, slots: ingSlots });
+    }
+  });
+
+  // Render matches
+  matches.forEach(({ ingredient, slots }) => {
+    const row = createHarmonieRow(
+      ingredient.name_de,
+      slots,
+      false,
+      () => {
+        // Navigate to this ingredient
+        document.getElementById('ingredient-select').value = ingredient.id;
+        loadIngredient(ingredient.id);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    );
+    matchesContainer.appendChild(row);
+  });
+}
+
+// Set description
+function setHarmonieDescription() {
+  const descText = document.getElementById('harmonie-desc-text');
+  descText.textContent = '';
+}

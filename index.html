@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Aroma Explorer</title>
+  <meta name="description"
+    content="Entdecke die Aromen deiner Zutaten — Geschmack, Moleküle, Aromaentfaltung und Harmonie.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- Ingredient Selector -->
+  <header id="app-header">
+    <div class="ingredient-selector">
+      <label for="ingredient-select" class="sr-only">Zutat wählen</label>
+      <select id="ingredient-select">
+        <option value="">— Zutat wählen —</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- Ingredient Name -->
+  <div id="ingredient-title" class="ingredient-title" style="display:none;"></div>
+  <div id="ingredient-main-desc" class="ingredient-main-desc" style="display:none;"></div>
+
+  <!-- Main Content -->
+  <main id="app-main">
+
+    <!-- GESCHMACK -->
+    <section class="listing-section" id="section-geschmack">
+      <div class="section-header" data-target="geschmack-content">
+        <h2 class="section-headline">GESCHMACK</h2>
+        <span class="toggle-arrow">▾</span>
+      </div>
+      <div class="section-description" id="geschmack-description">
+        <p id="geschmack-desc-text"></p>
+      </div>
+      <div class="section-body" id="geschmack-content">
+        <div id="geschmack-quarters" class="geschmack-quarters"></div>
+      </div>
+    </section>
+
+    <!-- MOLEKÜLE -->
+    <section class="listing-section" id="section-molekuele">
+      <div class="section-header" data-target="molekuele-content">
+        <h2 class="section-headline">MOLEKÜLE</h2>
+        <span class="toggle-arrow">▾</span>
+      </div>
+      <div class="section-description" id="molekuele-description">
+        <p id="molekuele-desc-text"></p>
+      </div>
+      <div class="section-body" id="molekuele-content">
+        <div id="molekuele-circles" class="molekuele-grid"></div>
+        <div id="molekuele-detail" class="molekuele-detail" style="display:none;"></div>
+      </div>
+    </section>
+
+    <!-- AROMAENTFALTUNG -->
+    <section class="listing-section" id="section-aromaentfaltung">
+      <div class="section-header" data-target="aromaentfaltung-content">
+        <h2 class="section-headline">AROMAENTFALTUNG</h2>
+        <span class="toggle-arrow">▾</span>
+      </div>
+      <div class="section-description" id="aromaentfaltung-description">
+        <p id="aromaentfaltung-desc-text"></p>
+      </div>
+      <div class="section-body" id="aromaentfaltung-content">
+        <div id="aroma-chart" class="aroma-chart"></div>
+        <div id="aroma-phase-info" class="aroma-phase-info"></div>
+      </div>
+    </section>
+
+    <!-- HARMONIE -->
+    <section class="listing-section" id="section-harmonie">
+      <div class="section-header" data-target="harmonie-content">
+        <h2 class="section-headline">HARMONIE</h2>
+        <span class="toggle-arrow">▾</span>
+      </div>
+      <div class="section-description" id="harmonie-description">
+        <p id="harmonie-desc-text"></p>
+      </div>
+      <div class="section-body" id="harmonie-content">
+        <div id="harmonie-main" class="harmonie-main"></div>
+        <div id="harmonie-matches" class="harmonie-matches"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Supabase CDN -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
