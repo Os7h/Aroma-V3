@@ -172,9 +172,7 @@ body {
 }
 
 .aroma-list li::before {
-  content: "–";
-  position: absolute;
-  left: 0;
+  content: "";
 }
 
 .page-subtitle {
