@@ -328,7 +328,7 @@ function renderGeschmack(ingredient) {
 
   // Set description for GESCHMACK explicitly (if you ever need a sub-description, left blank for now so main desc shines below title)
   const descText = document.getElementById('geschmack-desc-text');
-  descText.textContent = '';
+  descText.textContent = 'Dieser Schema zeigt an, welche der fünf Geschmacksrichtungen in dem Gewürz schwach - heller Grauton - oder stark - dunkler Grauton - aktiv sind. Ist ein Grundgeschmack nicht aktiv bleibt die Fläche fast weiß.';
 }
 
 // ============================================
@@ -662,7 +662,7 @@ function renderAromaentfaltung() {
 
   // Set description
   const descText = document.getElementById('aromaentfaltung-desc-text');
-  descText.textContent = '';
+  descText.textContent = 'Hier ist der optimale Temperaturbereich für den Einsatz der Zutat auf einen Blick zu sehen. Die einzelnen Zonen zeigen mitunter verschiedenen Charakteristika für ein und dasselbe Gewürz.';
 }
 
 // ============================================
@@ -821,5 +821,5 @@ function updateHarmonieMatches() {
 // Set description
 function setHarmonieDescription() {
   const descText = document.getElementById('harmonie-desc-text');
-  descText.textContent = '';
+  descText.textContent = 'In diesem Abschnitt zeigen gleiche Farben an, dass sich das typischen Aroma dieser Gruppe in Kombination weiter verstärken würde. Sind die Farben im jewels anderen Gewürz nicht enthalten, findet in der Kombination der Gewürze eine gegenseitige Erweiterung um die jeweiligen Aromen statt.';
 }
