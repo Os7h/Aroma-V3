@@ -357,6 +357,7 @@ function renderGeschmack(ingredient) {
 
     const square = document.createElement('div');
     square.className = 'taste-square';
+    square.style.transition = 'none';
     square.style.backgroundColor = 'var(--grey-3)';
     square.dataset.targetColor = targetColor;
 
@@ -371,12 +372,16 @@ function renderGeschmack(ingredient) {
     squares.push(square);
   });
 
-  // Staggered animation
+  // Force paint with faded state, then animate
   requestAnimationFrame(() => {
-    squares.forEach((sq, i) => {
-      setTimeout(() => {
-        sq.style.backgroundColor = sq.dataset.targetColor;
-      }, i * 100);
+    squares.forEach(sq => sq.offsetHeight); // force reflow
+    requestAnimationFrame(() => {
+      squares.forEach((sq, i) => {
+        sq.style.transition = 'background-color 0.4s ease';
+        setTimeout(() => {
+          sq.style.backgroundColor = sq.dataset.targetColor;
+        }, i * 100);
+      });
     });
   });
 
@@ -412,7 +417,8 @@ function renderMolekuele() {
     const isActive = activeSlots.has(group.slot);
     const circle = document.createElement('div');
     circle.className = 'mol-circle';
-    // Start all at faded color3
+    // Start all at faded color3, no transition initially
+    circle.style.transition = 'transform 0.2s ease, box-shadow 0.2s ease';
     circle.style.backgroundColor = color3(group.color_hex);
     circle.dataset.slot = group.slot;
     circle.dataset.active = isActive ? '1' : '0';
@@ -459,10 +465,14 @@ function renderMolekuele() {
     [order[i], order[j]] = [order[j], order[i]];
   }
   requestAnimationFrame(() => {
-    order.forEach((idx, step) => {
-      setTimeout(() => {
-        circleEls[idx].style.backgroundColor = circleEls[idx].dataset.targetBg;
-      }, step * 80);
+    circleEls.forEach(c => c.offsetHeight); // force reflow
+    requestAnimationFrame(() => {
+      order.forEach((idx, step) => {
+        setTimeout(() => {
+          circleEls[idx].style.transition = 'transform 0.2s ease, box-shadow 0.2s ease, background-color 0.4s ease';
+          circleEls[idx].style.backgroundColor = circleEls[idx].dataset.targetBg;
+        }, step * 80);
+      });
     });
   });
 
