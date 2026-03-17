@@ -58,8 +58,16 @@ function navigateTo(viewName) {
   window.scrollTo(0, 0);
 }
 
-// --- Init ---
-document.addEventListener('DOMContentLoaded', async () => {
+// --- Auth ---
+const AUTH_USER_HASH = 'b4a45bf73970cccbb03b61a7360caa012930b252ac05705b0025bc961a437acd';
+const AUTH_PASS_HASH = 'abe2d17b763ddbbad0393541405d73771921e356a868fdcd4bc2ddb17154d386';
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function initApp() {
   try {
     await loadGroups();
     await loadIngredients();
@@ -70,6 +78,39 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (err) {
     console.error('Init error:', err);
   }
+}
+
+// --- Init ---
+document.addEventListener('DOMContentLoaded', () => {
+  const loginView = document.getElementById('view-login');
+  const loginForm = document.getElementById('login-form');
+  const loginError = document.getElementById('login-error');
+
+  // Check if already authenticated
+  if (sessionStorage.getItem('aroma-auth') === 'true') {
+    loginView.style.display = 'none';
+    initApp();
+    return;
+  }
+
+  // Show login, hide splash
+  document.getElementById('view-splash').style.display = 'none';
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const user = document.getElementById('login-user').value;
+    const pass = document.getElementById('login-pass').value;
+    const userHash = await sha256(user);
+    const passHash = await sha256(pass);
+
+    if (userHash === AUTH_USER_HASH && passHash === AUTH_PASS_HASH) {
+      sessionStorage.setItem('aroma-auth', 'true');
+      loginView.style.display = 'none';
+      initApp();
+    } else {
+      loginError.textContent = 'Falscher Benutzername oder Passwort.';
+    }
+  });
 });
 
 // --- Navigation Setup ---
