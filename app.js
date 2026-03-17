@@ -258,6 +258,7 @@ async function loadIngredient(id) {
   renderMolekuele();
   renderAromaentfaltung();
   renderHarmonie();
+  setHarmonieDescription();
 
   // All listing bodies are permanent now. Ensure no description is open initially
   document.querySelectorAll('.section-description').forEach(d => d.classList.remove('open'));

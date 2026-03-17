@@ -486,7 +486,7 @@ body {
 .section-description p {
   padding: 8px 0 4px;
   font-size: 13px;
-  color: var(--grey-2);
+  color: #888888;
   line-height: 1.6;
   font-style: normal;
 }
