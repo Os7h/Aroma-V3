@@ -522,6 +522,25 @@ function showMoleculeDetail(group) {
     m.molecules?.aroma_groups?.slot === group.slot
   );
 
+  // Check if this group has temperature behavior data (e.g., Group 9 Trigeminus)
+  const groupTemp = currentGroupTemps.find(gt =>
+    gt.aroma_groups?.slot === group.slot
+  );
+
+  // If no molecules but has temperature data, show the behavior description
+  if (groupMols.length === 0 && groupTemp?.behavior_description_de) {
+    const behaviorDiv = document.createElement('div');
+    behaviorDiv.className = 'mol-detail-molecule';
+
+    const behaviorText = document.createElement('div');
+    behaviorText.className = 'mol-detail-prop-value';
+    behaviorText.style.marginTop = '8px';
+    behaviorText.textContent = groupTemp.behavior_description_de;
+    behaviorDiv.appendChild(behaviorText);
+
+    detail.appendChild(behaviorDiv);
+  }
+
   groupMols.forEach(m => {
     const mol = m.molecules;
     const molDiv = document.createElement('div');
