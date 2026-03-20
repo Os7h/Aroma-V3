@@ -279,7 +279,7 @@ async function loadIngredient(id) {
   // Fetch all related data in parallel
   const [molRes, groupTempRes, phaseRes] = await Promise.all([
     sb.from('ingredient_molecules')
-      .select('molecule_id, molecules(id, name_de, group_id, descriptors_de, solubility_de, aroma_groups(slot, title_de, name_de, descriptor_de, color_hex))')
+      .select('molecule_id, has_trigeminal_activation, molecules(id, name_de, group_id, descriptors_de, solubility_de, aroma_groups(slot, title_de, name_de, descriptor_de, color_hex))')
       .eq('ingredient_id', id),
     sb.from('ingredient_group_temperature')
       .select('group_id, temp_start_c, temp_end_c, behavior_description_de, aroma_groups(slot, color_hex, name_de)')
@@ -409,19 +409,11 @@ function renderMolekuele() {
     if (m.molecules?.aroma_groups?.slot) {
       activeSlots.add(m.molecules.aroma_groups.slot);
     }
-  });
-  // Also add groups that have temperature data (e.g., Group 9 Trigeminus without molecules)
-  currentGroupTemps.forEach(gt => {
-    if (gt.aroma_groups?.slot) {
-      activeSlots.add(gt.aroma_groups.slot);
+    // Auto-activate Group 9 (Trigeminus) if any molecule has trigeminal activation
+    if (m.has_trigeminal_activation) {
+      activeSlots.add(9);
     }
   });
-
-  // Debug logging
-  console.log('Current ingredient:', currentIngredient.name_de);
-  console.log('Active slots from molecules:', Array.from(activeSlots));
-  console.log('Temperature data groups:', currentGroupTemps.map(gt => ({ slot: gt.aroma_groups?.slot, name: gt.aroma_groups?.name_de })));
-  console.log('All currentGroupTemps:', currentGroupTemps);
 
   // Render 9 circles
   const circleEls = [];
@@ -801,6 +793,9 @@ async function renderHarmonie() {
     if (m.molecules?.aroma_groups?.slot) {
       activeSlots.add(m.molecules.aroma_groups.slot);
     }
+    if (m.has_trigeminal_activation) {
+      activeSlots.add(9);
+    }
   });
 
   // Render main ingredient row
@@ -817,10 +812,10 @@ async function renderHarmonie() {
 }
 
 async function preloadAllIngredientGroups() {
-  // Fetch all ingredient molecules with their group slots
+  // Fetch all ingredient molecules with their group slots and trigeminal flag
   const { data } = await sb
     .from('ingredient_molecules')
-    .select('ingredient_id, molecules(aroma_groups(slot))');
+    .select('ingredient_id, has_trigeminal_activation, molecules(aroma_groups(slot))');
 
   allIngredientGroups = {};
   (data || []).forEach(row => {
@@ -830,6 +825,9 @@ async function preloadAllIngredientGroups() {
       allIngredientGroups[row.ingredient_id] = new Set();
     }
     allIngredientGroups[row.ingredient_id].add(slot);
+    if (row.has_trigeminal_activation) {
+      allIngredientGroups[row.ingredient_id].add(9);
+    }
   });
 }
 
