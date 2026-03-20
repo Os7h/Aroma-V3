@@ -417,6 +417,12 @@ function renderMolekuele() {
     }
   });
 
+  // Debug logging
+  console.log('Current ingredient:', currentIngredient.name_de);
+  console.log('Active slots from molecules:', Array.from(activeSlots));
+  console.log('Temperature data groups:', currentGroupTemps.map(gt => ({ slot: gt.aroma_groups?.slot, name: gt.aroma_groups?.name_de })));
+  console.log('All currentGroupTemps:', currentGroupTemps);
+
   // Render 9 circles
   const circleEls = [];
   allGroups.forEach(group => {
