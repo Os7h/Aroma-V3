@@ -410,6 +410,12 @@ function renderMolekuele() {
       activeSlots.add(m.molecules.aroma_groups.slot);
     }
   });
+  // Also add groups that have temperature data (e.g., Group 9 Trigeminus without molecules)
+  currentGroupTemps.forEach(gt => {
+    if (gt.aroma_groups?.slot) {
+      activeSlots.add(gt.aroma_groups.slot);
+    }
+  });
 
   // Render 9 circles
   const circleEls = [];
