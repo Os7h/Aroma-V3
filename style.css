@@ -17,7 +17,7 @@
   --black: #000000;
   --grey-1: #555555;
   --grey-2: #b3b3b3;
-  --grey-3: #eeeeee;
+  --grey-3: #e0e0e0;
   --white: #ffffff;
   --bg: #ffffff;
 
@@ -51,11 +51,9 @@ body {
   color: var(--black);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  padding: 0 16px 60px;
+  padding: 0 20px 60px;
   max-width: 480px;
   margin: 0 auto;
-  box-sizing: border-box;
-  overflow-x: hidden;
 }
 
 /* Screen reader only */
@@ -75,6 +73,70 @@ body {
    ============================================ */
 .view {
   min-height: 100vh;
+}
+
+/* ============================================
+   LOGIN SCREEN
+   ============================================ */
+#view-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 280px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--black);
+  background: var(--white);
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  letter-spacing: 0.5px;
+  outline: none;
+}
+
+.login-input:focus {
+  border-color: var(--grey-1);
+}
+
+.login-btn {
+  padding: 12px;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--white);
+  background: var(--grey-1);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.login-btn:active {
+  background: var(--black);
+}
+
+.login-error {
+  font-size: 13px;
+  color: #c0392b;
+  text-align: center;
+  min-height: 18px;
 }
 
 /* ============================================
@@ -130,19 +192,6 @@ body {
   color: var(--grey-2);
 }
 
-.menu-credit {
-  position: absolute;
-  bottom: 36px;
-  left: 0;
-  right: 0;
-  text-align: center;
-  font-size: 10px;
-  font-weight: 400;
-  letter-spacing: 1.5px;
-  line-height: 1.8;
-  color: var(--grey-2);
-}
-
 /* ============================================
    CONTENT PAGES (THEORIE / PRAXIS)
    ============================================ */
@@ -161,7 +210,7 @@ body {
 
 .page-body {
   font-size: 14px;
-  color: var(--black);
+  color: var(--grey-1);
   line-height: 1.7;
 }
 
@@ -177,15 +226,17 @@ body {
 
 .aroma-list li {
   font-size: 14px;
-  color: var(--black);
+  color: var(--grey-1);
   line-height: 1.7;
-  margin-bottom: 0;
+  margin-bottom: 6px;
   padding-left: 12px;
   position: relative;
 }
 
 .aroma-list li::before {
-  content: "";
+  content: "–";
+  position: absolute;
+  left: 0;
 }
 
 .page-subtitle {
@@ -200,12 +251,11 @@ body {
 
 .taste-list {
   margin: 12px 0 20px;
-  padding-left: 24px;
 }
 
 .taste-item {
   font-size: 14px;
-  color: var(--black);
+  color: var(--grey-1);
   line-height: 1.7;
   margin-bottom: 8px;
 }
@@ -213,12 +263,6 @@ body {
 .taste-item strong {
   color: var(--black);
   font-weight: 600;
-}
-
-/* Moleküle section title */
-.gruppe-section-title {
-  font-size: 17px;
-  margin-bottom: 20px;
 }
 
 /* Moleküle groups in THEORIE */
@@ -239,47 +283,24 @@ body {
   letter-spacing: 0.5px;
   color: var(--black);
   margin-bottom: 4px;
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.gruppe-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  display: inline-block;
-  flex-shrink: 0;
-  margin-top: 3px;
-}
-
-.gruppe-dot-spacer {
-  display: inline-block;
-  width: 14px;
-  flex-shrink: 0;
-  margin-right: 8px;
 }
 
 .gruppe-descriptor {
   font-size: 13px;
   color: var(--grey-2);
-  font-style: normal;
+  font-style: italic;
   margin-bottom: 8px;
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
 }
 
 .maillard-note {
   font-size: 13px;
   color: var(--grey-2);
-  font-style: normal;
-  padding-left: 24px;
+  font-style: italic;
 }
 
 .placeholder-text {
   color: var(--grey-2);
-  font-style: normal;
+  font-style: italic;
 }
 
 /* Page navigation arrow */
@@ -348,9 +369,7 @@ body {
 .zutaten-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  width: 100%;
-  box-sizing: border-box;
+  gap: 8px;
 }
 
 .zutaten-item {
@@ -358,9 +377,7 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 12px 2px;
-  min-width: 0;
-  word-break: break-word;
+  padding: 14px 2px;
   background: #fafafa;
   border-radius: 8px;
   cursor: pointer;
@@ -436,7 +453,7 @@ body {
 }
 
 .ingredient-main-desc {
-  font-size: 15.5px;
+  font-size: 14px;
   color: var(--grey-1);
   line-height: 1.6;
   margin-bottom: 32px;
@@ -499,7 +516,7 @@ body {
 .section-description p {
   padding: 8px 0 4px;
   font-size: 13px;
-  color: #888888;
+  color: var(--grey-2);
   line-height: 1.6;
   font-style: normal;
 }
@@ -527,7 +544,6 @@ body {
   max-width: 48px;
   aspect-ratio: 1;
   border-radius: 4px;
-  transition: background-color 0.4s ease;
 }
 
 .quarter-label {
@@ -560,7 +576,7 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.4s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -867,79 +883,4 @@ body {
     width: 32px;
     height: 32px;
   }
-}
-
-/* --- Login Screen --- */
-.login-view {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100dvh;
-  background: #ffffff;
-}
-
-.login-container {
-  width: 100%;
-  max-width: 320px;
-  padding: 0 24px;
-  text-align: center;
-}
-
-.login-title {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  color: var(--black);
-  margin-bottom: 48px;
-}
-
-.login-input {
-  display: block;
-  width: 100%;
-  padding: 14px 16px;
-  margin-bottom: 16px;
-  font-family: 'Inter', sans-serif;
-  font-size: 15px;
-  color: var(--black);
-  background: var(--grey-3);
-  border: 1px solid transparent;
-  border-radius: 8px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.login-input:focus {
-  border-color: var(--grey-1);
-}
-
-.login-input::placeholder {
-  color: var(--grey-2);
-}
-
-.login-button {
-  display: block;
-  width: 100%;
-  padding: 14px;
-  margin-top: 8px;
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  color: #ffffff;
-  background: var(--black);
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.login-button:active {
-  opacity: 0.7;
-}
-
-.login-error {
-  margin-top: 16px;
-  font-size: 13px;
-  color: #c0392b;
-  min-height: 20px;
 }
