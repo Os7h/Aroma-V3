@@ -82,7 +82,35 @@ async function initApp() {
 
 // --- Init ---
 document.addEventListener('DOMContentLoaded', () => {
-  initApp();
+  const loginView = document.getElementById('view-login');
+  const loginForm = document.getElementById('login-form');
+  const loginError = document.getElementById('login-error');
+
+  // Check if already authenticated
+  if (sessionStorage.getItem('aroma-auth') === 'true') {
+    loginView.style.display = 'none';
+    initApp();
+    return;
+  }
+
+  // Show login, hide splash
+  document.getElementById('view-splash').style.display = 'none';
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const user = document.getElementById('login-user').value;
+    const pass = document.getElementById('login-pass').value;
+    const userHash = await sha256(user);
+    const passHash = await sha256(pass);
+
+    if (userHash === AUTH_USER_HASH && passHash === AUTH_PASS_HASH) {
+      sessionStorage.setItem('aroma-auth', 'true');
+      loginView.style.display = 'none';
+      initApp();
+    } else {
+      loginError.textContent = 'Falscher Benutzername oder Passwort.';
+    }
+  });
 });
 
 // --- Navigation Setup ---
